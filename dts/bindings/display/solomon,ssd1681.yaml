@@ -1,0 +1,85 @@
+# Copyright (c) 2022 Andreas Sandberg
+# Copyright (c) 2018-2020 PHYTEC Messtechnik GmbH
+# Copyright 2024 NXP
+# Copyright 2025 Volodymyr Tesliuk <vovatesluk6a@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+description: Solomon SSD1681 tricolor EPD controller
+
+compatible: "solomon,ssd1681"
+
+include: [spi-device.yaml, display-controller.yaml]
+
+properties:
+  busy-gpios:
+    type: phandle-array
+    required: true
+    description: BUSY pin
+
+  reset-gpios:
+    type: phandle-array
+    description: RESET pin
+
+  dc-gpios:
+    type: phandle-array
+    description: DC (Data/Command) pin
+
+  width:
+    type: int
+    required: true
+    description: Width in pixels
+
+  height:
+    type: int
+    required: true
+    description: Height in pixels
+
+  rotation:
+    type: int
+    default: 0
+    description: Display rotation (0, 90, 180, 270 degrees)
+    enum:
+      - 0
+      - 90
+      - 180
+      - 270
+
+  tssv:
+    type: int
+    description: Temperature sensor selection value
+
+  softstart:
+    type: uint8-array
+    description: Booster soft start configuration
+
+child-binding:
+  description: Display profile (full or partial refresh)
+
+  properties:
+    lut:
+      type: uint8-array
+      description: Look-up table for waveforms
+
+    gdv:
+      type: uint8-array
+      description: Gate driving voltage
+
+    sdv:
+      type: uint8-array
+      description: Source driving voltage
+
+    vcom:
+      type: int
+      description: VCOM voltage setting
+
+    border-waveform:
+      type: int
+      description: Border waveform control
+
+    dummy-line:
+      type: int
+      description: Dummy line period
+
+    gate-line-width:
+      type: int
+      description: Gate line width

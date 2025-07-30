@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig SSD1681_TRICOLOR
+    bool "SSD1681 Tricolor EPD Display Driver"
+    depends on DISPLAY && MIPI_DBI
+    help
+      Enable driver for SSD1681 tricolor e-paper display controller.
+      This driver supports both monochrome and tricolor display modes.
+
+if SSD1681_TRICOLOR
+
+config SSD1681_TRICOLOR_INIT_PRIORITY
+    int "Init priority"
+    default 85
+    help
+      Device driver initialization priority.
+      Device is initialized after SPI and GPIO drivers.
+
+endif # SSD1681_TRICOLOR
