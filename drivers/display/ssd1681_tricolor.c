@@ -903,22 +903,12 @@ static int ssd16xx_controller_init(const struct device *dev) {
         return err;
     }
 
-    err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM);
-    if (err < 0) {
-        return err;
-    }
-
-    err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
-    if (err < 0) {
-        return err;
-    }
-
-    /* Initialize display to white state according to LUT table */
-    /* White = R=0, B/W=1 according to SSD1681 LUT mapping */
-    memset(data->black_plane, 0xFF, data->plane_bytes);  /* B/W plane: 1 = white */
-    memset(data->red_plane, 0x00, data->plane_bytes);    /* R plane: 0 = no red */
+    /* Test: Initialize to black state to verify LUT mapping */
+    /* Black = R=0, B/W=0 according to SSD1681 LUT mapping */
+    memset(data->black_plane, 0x00, data->plane_bytes);  /* B/W plane: 0 for black */
+    memset(data->red_plane, 0x00, data->plane_bytes);    /* R plane: 0 for black */
     
-    /* Write white state to both buffers */
+    /* Write black state directly to both buffers for testing */
     err = ssd16xx_write_cmd(dev, SSD16XX_CMD_WRITE_RAM, data->black_plane, data->plane_bytes);
     if (err < 0) {
         return err;
