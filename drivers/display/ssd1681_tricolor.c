@@ -891,11 +891,21 @@ static int ssd16xx_controller_init(const struct device *dev) {
     memset(data->black_plane, 0, data->plane_bytes);
     memset(data->red_plane, 0, data->plane_bytes);
 
+    /* Perform a proper hardware reset sequence */
     err = mipi_dbi_reset(config->mipi_dev, SSD16XX_RESET_DELAY);
     if (err < 0) {
         return err;
     }
 
+    /* Extended delay after reset to ensure controller is ready */
+    k_msleep(SSD16XX_RESET_DELAY * 2);
+    
+    /* Send software reset command to ensure clean state */
+    err = ssd16xx_write_cmd(dev, SSD16XX_CMD_SW_RESET, NULL, 0);
+    if (err < 0) {
+        return err;
+    }
+    
     k_msleep(SSD16XX_RESET_DELAY);
 
     err = ssd16xx_set_profile(dev, SSD16XX_PROFILE_FULL);
@@ -903,12 +913,13 @@ static int ssd16xx_controller_init(const struct device *dev) {
         return err;
     }
 
-    /* Test: Initialize to black state to verify LUT mapping */
-    /* Black = R=0, B/W=0 according to SSD1681 LUT mapping */
-    memset(data->black_plane, 0x00, data->plane_bytes);  /* B/W plane: 0 for black */
-    memset(data->red_plane, 0x00, data->plane_bytes);    /* R plane: 0 for black */
+    /* Test: Try alternating pattern to see if we can get any change */
+    /* Fill B/W plane with 0xFF and R plane with 0x00 - should be white */
+    memset(data->black_plane, 0xFF, data->plane_bytes);  /* B/W plane: all 1s */
+    memset(data->red_plane, 0x00, data->plane_bytes);    /* R plane: all 0s */
+    LOG_INF("Initializing display with B/W=0xFF, R=0x00 pattern");
     
-    /* Write black state directly to both buffers for testing */
+    /* Write test pattern to both buffers */
     err = ssd16xx_write_cmd(dev, SSD16XX_CMD_WRITE_RAM, data->black_plane, data->plane_bytes);
     if (err < 0) {
         return err;
