@@ -34,15 +34,6 @@ properties:
     required: true
     description: Height in pixels
 
-  rotation:
-    type: int
-    default: 0
-    description: Display rotation (0, 90, 180, 270 degrees)
-    enum:
-      - 0
-      - 90
-      - 180
-      - 270
 
   tssv:
     type: int

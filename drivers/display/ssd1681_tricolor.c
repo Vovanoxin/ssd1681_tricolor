@@ -492,11 +492,14 @@ static int ssd16xx_write_tricolor(const struct device *dev, const uint16_t x, co
             uint8_t mask = 1 << (SSD16XX_PIXELS_PER_BYTE - 1 - (bit % SSD16XX_PIXELS_PER_BYTE));
 
             if (black) {
-                data->black_plane[idx] |= mask;
+                // Black: R=0, B/W=0 according to LUT table
+                // Both planes already cleared to 0, so do nothing
             } else if (red) {
-                data->red_plane[idx] |= mask;
+                data->red_plane[idx] |= mask;  // Red: R=1, B/W=0
+            } else {
+                // White: R=0, B/W=1 according to LUT table  
+                data->black_plane[idx] |= mask;
             }
-            /* else leave both bits 0 (white) */
         }
     }
     /* window + both planes + single activation */
@@ -906,6 +909,22 @@ static int ssd16xx_controller_init(const struct device *dev) {
     }
 
     err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
+    if (err < 0) {
+        return err;
+    }
+
+    /* Initialize display to white state according to LUT table */
+    /* White = R=0, B/W=1 according to SSD1681 LUT mapping */
+    memset(data->black_plane, 0xFF, data->plane_bytes);  /* B/W plane: 1 = white */
+    memset(data->red_plane, 0x00, data->plane_bytes);    /* R plane: 0 = no red */
+    
+    /* Write white state to both buffers */
+    err = ssd16xx_write_cmd(dev, SSD16XX_CMD_WRITE_RAM, data->black_plane, data->plane_bytes);
+    if (err < 0) {
+        return err;
+    }
+    
+    err = ssd16xx_write_cmd(dev, SSD16XX_CMD_WRITE_RED_RAM, data->red_plane, data->plane_bytes);
     if (err < 0) {
         return err;
     }
